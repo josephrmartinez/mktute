@@ -1,0 +1,25 @@
+{
+  "name": "mktute",
+  "version": "1.0.4",
+  "description": "CLI tool to generate a markdown formatted tutorial based on recent diffs.",
+  "main": "src/index.js",
+  "type": "module",
+  "bin": {
+    "mktute": "bin/mktute.js"
+  },
+  "scripts": {
+    "start": "node bin/mktute.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5",
+    "inquirer": "^9.2.23",
+    "openai": "^4.47.3",
+    "simple-git": "^3.24.0"
+  }
+}
