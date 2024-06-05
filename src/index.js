@@ -6,44 +6,15 @@ import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
 
-export async function runMktute() {
-  try {
-    const { startCommit, endCommit } = await selectCommits();
-    
-      if (!process.env.OPENAI_API_KEY) {
-        const { apiKey } = await inquirer.prompt({
-          type: 'input',
-          name: 'apiKey',
-          message: 'Set OPENAI_API_KEY env variable and rerun mktute: "export OPENAI_API_KEY=\'\'"):',
-        });
-        process.env.OPENAI_API_KEY = apiKey;
-      }
-      
-    const { topic } = await inquirer.prompt({
-      type: 'input',
-      name: 'topic',
-      message: 'Enter tutorial topic:'
-    });
+function createSpinner() {
+  let i = 0;
+  return () => {
+    i = ++i % 5; // Change this value to change the number of frames
+    return `\r${chalk.yellow(['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦'].join(''))} Fetching AI response... ${i}%`;
+  };
+}
 
-      
-    // TODO: add confirmation stage with estimated cost
-      
-    console.log(chalk.yellow('Fetching AI response...'));
-
-    // TODO: update to only allow end commit to be from AFTER selected start commit
-    const gitDiff = await getGitDiff(startCommit, endCommit);
-
-    // TODO: allow user to specify ai model?
-    const aiResponse = await getAiResponse(gitDiff, topic);
-      
-    const tutorial = aiResponse.choices[0].message.content
-    const inputTokens = aiResponse.usage.prompt_tokens
-    const outputTokens = aiResponse.usage.completion_tokens
-    // const cost = (inputTokens / 1000 * 0.005) + (outputTokens / 1000 * 0.015) // gpt-4o
-    const cost = (inputTokens / 1000 * 0.01) + (outputTokens / 1000 * 0.03) // gpt-4-turbo
-    
-
-    function generateFileName() {
+function generateFileName() {
         const now = new Date();
         
         const year = now.getFullYear();
@@ -60,13 +31,55 @@ export async function runMktute() {
         return fileName;
     }
 
-    const fileName = generateFileName();
-    fs.writeFileSync(path.join(process.cwd(), fileName), tutorial);
+export async function runMktute() {
 
-    console.log(chalk.green(`New tutorial drafted: "${fileName}"`));
-    console.log(chalk.cyan(`Generation cost: $${cost.toFixed(4)}`));
-  } catch (error) {
-    console.error(chalk.red('Error running mktute:'), error);
+  const { startCommit, endCommit } = await selectCommits();
+  
+  if (!process.env.OPENAI_API_KEY) {
+    const { apiKey } = await inquirer.prompt({
+      type: 'input',
+      name: 'apiKey',
+      message: 'Set OPENAI_API_KEY env variable: ',
+    });
+    process.env.OPENAI_API_KEY = apiKey;
   }
+    
+  const { topic } = await inquirer.prompt({
+    type: 'input',
+    name: 'topic',
+    message: 'Enter tutorial topic:'
+  });
+
+    
+  // TODO: add confirmation stage with estimated cost
+    
+  // Start the loading indicator
+  const loadingIndicator = createSpinner();
+  console.log(loadingIndicator());
+
+  // TODO: update to only allow end commit to be from AFTER selected start commit
+  const gitDiff = await getGitDiff(startCommit, endCommit);
+
+  // TODO: allow user to specify ai model?
+  const aiResponse = await getAiResponse(gitDiff, topic);
+    
+  // Stop the loading indicator
+  console.log('\n');
+
+  const tutorial = aiResponse.choices[0].message.content
+  const inputTokens = aiResponse.usage.prompt_tokens
+  const outputTokens = aiResponse.usage.completion_tokens
+  // const cost = (inputTokens / 1000 * 0.005) + (outputTokens / 1000 * 0.015) // gpt-4o
+  const cost = (inputTokens / 1000 * 0.01) + (outputTokens / 1000 * 0.03) // gpt-4-turbo
+  
+
+  
+
+  const fileName = generateFileName();
+  fs.writeFileSync(path.join(process.cwd(), fileName), tutorial);
+
+  console.log(chalk.green(`New tutorial drafted: "${fileName}"`));
+  console.log(chalk.cyan(`Generation cost: $${cost.toFixed(4)}`));
+  
 }
 
