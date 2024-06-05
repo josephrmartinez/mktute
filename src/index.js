@@ -7,7 +7,7 @@ import fs from 'fs';
 import path from 'path';
 
 function createSpinner() {
-  let indicator = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦'];
+  let indicator = ['◢', '◣', '◤', '◥'];
   let i = 0;
   let intervalId;
 

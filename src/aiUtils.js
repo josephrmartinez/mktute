@@ -13,7 +13,7 @@ export default async function getAiResponse(gitDiff, topic) {
         },
         {
           role: 'user',
-          content: `Generate a programming tutorial on the following topic ${topic}\n\nThis tutorial should be based entirely on the following git diffs:\n\n${gitDiff}\n\nBe sure to compare the original code with the updated code and to discuss the underlying concepts. Explain WHY the code update was made. When it is appropriate, break the diffs into multiple steps to accomplish the tutorial topic.`,
+          content: `Generate a programming tutorial on the following topic ${topic}\n\nThis tutorial should be based entirely on the following git diffs:\n\n${gitDiff}\n\nBe sure to compare the original code with the updated code and to discuss the underlying concepts. Explain WHY the code update was made. If the updated code contains corrections, explain what was wrong with the original code and why these corrections are effective. When it is appropriate, break the diffs into multiple steps to accomplish the tutorial topic.`,
         },
       ],
     });
