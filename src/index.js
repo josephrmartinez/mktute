@@ -7,10 +7,21 @@ import fs from 'fs';
 import path from 'path';
 
 function createSpinner() {
+  let indicator = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦'];
   let i = 0;
-  return () => {
-    i = ++i % 5; // Change this value to change the number of frames
-    return `\r${chalk.yellow(['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦'].join(''))} Fetching AI response... ${i}%`;
+  let intervalId;
+
+  return {
+    start: () => {
+      intervalId = setInterval(() => {
+        i = ++i % indicator.length;
+        process.stdout.write(`\r${chalk.yellow(`${indicator[i]} Fetching AI response...`)}`);
+      }, 300);
+    },
+    stop: () => {
+      clearInterval(intervalId);
+      process.stdout.write('\r'); // Clear the line
+    }
   };
 }
 
@@ -55,7 +66,7 @@ export async function runMktute() {
     
   // Start the loading indicator
   const loadingIndicator = createSpinner();
-  console.log(loadingIndicator());
+  loadingIndicator.start();
 
   // TODO: update to only allow end commit to be from AFTER selected start commit
   const gitDiff = await getGitDiff(startCommit, endCommit);
@@ -63,8 +74,8 @@ export async function runMktute() {
   // TODO: allow user to specify ai model?
   const aiResponse = await getAiResponse(gitDiff, topic);
     
-  // Stop the loading indicator
-  console.log('\n');
+  // Stop and clear the loading indicator
+  loadingIndicator.stop()
 
   const tutorial = aiResponse.choices[0].message.content
   const inputTokens = aiResponse.usage.prompt_tokens
