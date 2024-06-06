@@ -1,6 +1,6 @@
 # mktute
 
-CLI Tool for Generating Markdown Tutorials Based on Recent Diffs
+CLI App for Generating Markdown Tutorials Based on Recent Diffs
 
 ### Turn your recent git commits into a step-by-step programming tutorial:
 
