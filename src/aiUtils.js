@@ -20,7 +20,6 @@ export default async function getAiResponse(gitDiff, topic) {
 
     return response;
   } catch (error) {
-    console.error('Error fetching AI response:', error);
-    throw error;
+    throw error
   }
 }
