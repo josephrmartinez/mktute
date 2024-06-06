@@ -45,6 +45,10 @@ The following tutorial was generated at a cost of $0.0235:
 
 You should expect that generating a tutorial will likely cost **_more_** than the simple example above.
 
+### Demo
+
+![mktute gif illustration](public/demo.gif)
+
 ### A Note on "Slop"
 
 Please give consideration before publishing tutorials generated with mktute. While mktute lowers the barrier to writing a coding tutorial, you should absolutely spend time thoroughly editing the generated content before publishing.
