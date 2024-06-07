@@ -17,7 +17,8 @@ CLI App for Generating Markdown Tutorials Based on Recent Diffs
 
 ### But, why?
 
-- **Knowledge Sharing:** You figured out something while coding that would be highly useful to share with other developers. mktute helps you quickly document your work in a user-friendly format. Publishing tutorials based on your actual work is one way that you can [learn generously](https://www.recurse.com/self-directives#learn-generously).
+- **Knowledge Sharing:** You figured out something while coding that would be highly useful to share with other developers. mktute helps you quickly document your work in a user-friendly format. Publishing tutorials based on **_your actual work_** is one way that you can [learn generously](https://www.recurse.com/self-directives#learn-generously).
+- **Fill in Knowledge Gaps:** You're working with a framework that has changed significantly from the last training date of a popular LLM. Or your specific implementation is different from what the LLMs often suggest. Publishing a totorial based on your actual work can help with providing learning resources where LLMs are fall short.
 - **Leverage LLM Strengths:** While LLMs may struggle with generating code from scratch, they are generally very good at summarizing and explaining existing code. By feeding in your actual code changes, mktute leverages a real strength of LLMs to produce high-quality, step-by-step tutorials.
 
 ### Installation
