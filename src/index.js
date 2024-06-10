@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { selectCommits, getGitDiff } from './gitUtils.js';
-import getAiResponse from './aiUtils.js';
+import { getAiResponse, estimateCost } from './aiUtils.js';
 import { createLoadingIndicator, generateFileName } from './cliUtils.js';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
@@ -9,7 +9,7 @@ import path from 'path';
 
 
 export async function runMktute() {
-    // 1. Set ai api if not already accessible to shell
+    // 1. Set AI API key if not already accessible to shell
     if (!process.env.OPENAI_API_KEY) {
         const { apiKey } = await inquirer.prompt({
           type: 'password',
@@ -20,11 +20,12 @@ export async function runMktute() {
       }
     
     // 2. User selects commits
-    // TODO: update to only allow end commit to be from AFTER selected start commit
+    // TODO: clarify what start and end commits mean
     // TODO: return entire contents of updated file(s)
     const { startCommit, endCommit } = await selectCommits();  
     const gitDiff = await getGitDiff(startCommit, endCommit);
     
+  
     // 3. Enter tutorial topic
     const { topic } = await inquirer.prompt({
       type: 'input',
@@ -32,22 +33,33 @@ export async function runMktute() {
       message: 'Enter tutorial topic:'
     });
       
-    // 4. TODO: allow user to specify ai model? Local option?
-
-    // 5. TODO: add confirmation stage with estimated cost
+    // 4. Confirmation stage with estimated cost
+    const costEstimate = estimateCost(gitDiff)
+  
+    const { confirm_cost } = await inquirer.prompt(
+      {
+        name: "confirm_cost",
+        type: "confirm",
+        message: `Estimated generation cost: $${costEstimate.toFixed(4)} \n Okay to proceed?`,
+      });
     
-    // 6. Start and display the loading indicator
+    if (!confirm_cost) {
+      console.log("Opration cancelled by user.");
+      process.exit(0);
+    }
+    
+    // 5. Start and display the loading indicator
     const loadingIndicator = createLoadingIndicator();
     loadingIndicator.start();
    
     try {
-      // 8. Fetch ai response  
+      // 6. Fetch ai response  
       const aiResponse = await getAiResponse(gitDiff, topic);
         
-      // 9. Stop and clear the loading indicator
+      // 7. Stop and clear the loading indicator
       loadingIndicator.stop()
     
-      // 10. Display file name and generation cost
+      // 8. Display file name and generation cost
       const tutorial = aiResponse.choices[0].message.content
       const inputTokens = aiResponse.usage.prompt_tokens
       const outputTokens = aiResponse.usage.completion_tokens
