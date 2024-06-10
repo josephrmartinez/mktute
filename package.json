@@ -8,7 +8,8 @@
     "mktute": "bin/mktute.js"
   },
   "scripts": {
-    "start": "node bin/mktute.js"
+    "start": "node bin/mktute.js",
+    "build": ":"
   },
   "keywords": [],
   "author": "",
