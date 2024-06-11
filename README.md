@@ -59,5 +59,3 @@ Please give consideration before publishing tutorials generated with mktute. Whi
 - Local Model Inference: Implement an option to use local AI models for inference. Reduce cost, dependency on external APIs, and keep all data on device.
 
 - Improve prompt to give the model more "time to think"
-
-- Use tiktoken to estimate cost of tutorial generation. Present this estimate to the user before calling AI API provider.
