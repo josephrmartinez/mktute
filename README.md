@@ -5,7 +5,7 @@ CLI App for Generating Markdown Tutorials Based on Recent Diffs
 ### Turn your recent git commits into a step-by-step programming tutorial:
 
 1. Run `mktute`, select start and end commits.
-2. Your git diffs are sent to GPT-4-turbo. (You will be asked to set your OPENAI_API_KEY if it is not already accessible from the shell.)
+2. Your git diffs are sent to Anthropic's Claude 3 Sonnet or OpenAI's GPT-4-turbo. (You will be asked to set your api key for the selected provider if it is not already accessible from the shell.)
 3. mktute generates a first draft of a step-by-step tutorial covering the code you recently committed. The tutorial is automatically saved as a markdown file in the current working directory.
 
 ### Use cases:
@@ -41,10 +41,10 @@ simply type `mktute` in the command line to run the interactive command line use
 
 ### Example output and cost
 
-The following tutorial was generated at a cost of $0.0235:
+The following tutorial was generated with GPT-4 at a cost of $0.0235:
 [How to Center a `<div>` Using TailwindCSS](https://github.com/josephrmartinez/mktute/blob/main/public/Tutorial_2024_06_04_17_50_21.md)
 
-You should expect that generating a tutorial will likely cost **_more_** than the simple example above.
+When you run mktute, you will be presented with an option to choose which model you would like to use to generate the tutorial. A price estimation is included with these model selection choices.
 
 ### Demo
 
@@ -58,4 +58,4 @@ Please give consideration before publishing tutorials generated with mktute. Whi
 
 - Local Model Inference: Implement an option to use local AI models for inference. Reduce cost, dependency on external APIs, and keep all data on device.
 
-- Improve prompt to give the model more "time to think"
+- Improve prompt to give the model a tutorial framework and more "time to think"

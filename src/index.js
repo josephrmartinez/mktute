@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { selectCommits, getGitDiff } from './gitUtils.js';
-import { getAiResponse, estimateCost } from './aiUtils.js';
+import { getOpenAIResponse, getAnthropicResponse, estimateCost } from './aiUtils.js';
 import { createLoadingIndicator, generateFileName } from './cliUtils.js';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
@@ -9,82 +9,84 @@ import path from 'path';
 
 
 export async function runMktute() {
-    // 1. Set AI API key if not already accessible to shell
-    if (!process.env.OPENAI_API_KEY) {
-        const { apiKey } = await inquirer.prompt({
-          type: 'password',
-          name: 'apiKey',
-          message: 'Set OPENAI_API_KEY env variable: ',
-        });
-        process.env.OPENAI_API_KEY = apiKey;
-      }
-    
-    // 2. User selects commits
-    // TODO: clarify what start and end commits mean
-    // TODO: return entire contents of updated file(s)
-    const { startCommit, endCommit } = await selectCommits();  
-    const gitDiff = await getGitDiff(startCommit, endCommit);
-    
+  // Select commits
+  const { startCommit, endCommit } = await selectCommits();  
+  const gitDiff = await getGitDiff(startCommit, endCommit);
   
-    // 3. Enter tutorial topic
-    const { topic } = await inquirer.prompt({
-      type: 'input',
-      name: 'topic',
-      message: 'Enter tutorial topic:'
-    });
-      
-    // 4. Confirmation stage with estimated cost
-    const costEstimate = estimateCost(gitDiff)
+  // fs.writeFileSync("./gitdiffs.md", gitDiff); // Drop git diffs into local file for debugging 
+
+  // Enter tutorial topic
+  const { topic } = await inquirer.prompt({
+    type: 'input',
+    name: 'topic',
+    message: 'Enter tutorial topic:'
+  });
   
-    const { confirm_cost } = await inquirer.prompt(
-      {
-        name: "confirm_cost",
-        type: "confirm",
-        message: `Estimated generation cost: $${costEstimate.toFixed(4)} \n Okay to proceed?`,
+  const costEstimate = estimateCost(gitDiff)
+  
+  // Select AI model: GPT-4, Claude Opus
+  const { provider } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'provider',
+      message: 'Select AI provider:',
+      choices: [{ name: `Anthropic - Claude Sonnet - $${costEstimate.anthropic}`, value: "ANTHROPIC"}, {name: `OpenAI - GPT-4.0 - $${costEstimate.openAI}`, value: "OPENAI"}]
+    }]);
+  console.log(`Selected provider: ${provider}`);
+  
+  // Set AI API key for selected provider if not already accessible to shell
+  const envVarName = `${provider}_API_KEY`;
+
+  if (!process.env[envVarName]) {
+      const { apiKey } = await inquirer.prompt({
+        type: 'password',
+        name: 'apiKey',
+        message: `Set ${envVarName} env variable: `,
       });
-    
-    if (!confirm_cost) {
-      console.log("Opration cancelled by user.");
-      process.exit(0);
+      process.env[envVarName] = apiKey;
     }
-    
-    // 5. Start and display the loading indicator
-    const loadingIndicator = createLoadingIndicator();
-    loadingIndicator.start();
-   
-    try {
-      // 6. Fetch ai response  
-      const aiResponse = await getAiResponse(gitDiff, topic);
-        
-      // 7. Stop and clear the loading indicator
-      loadingIndicator.stop()
-    
-      // 8. Display file name and generation cost
-      const tutorial = aiResponse.choices[0].message.content
-      const inputTokens = aiResponse.usage.prompt_tokens
-      const outputTokens = aiResponse.usage.completion_tokens
-      // const cost = (inputTokens / 1000 * 0.005) + (outputTokens / 1000 * 0.015) // gpt-4o
-      const cost = (inputTokens / 1000 * 0.01) + (outputTokens / 1000 * 0.03) // gpt-4-turbo
+  
+  // Start and display the loading indicator
+  const loadingIndicator = createLoadingIndicator();
+  loadingIndicator.start();
+  
+  let response;
 
-      const fileName = generateFileName();
-      fs.writeFileSync(path.join(process.cwd(), fileName), tutorial);
+  try {
+    switch (provider) {
+      case "OPENAI":
+        response = await getOpenAIResponse(gitDiff, topic);
+        break;
+      case "ANTHROPIC":
+        response = await getAnthropicResponse(gitDiff, topic);
+        break;
+      default:
+        throw new Error("Unsupported provider.")
+    }
 
-      console.log(chalk.green(`New tutorial drafted: "${fileName}"`));
-      console.log(chalk.cyan(`Generation cost: $${cost.toFixed(4)}`));
-    } catch (error) {
-      loadingIndicator.stop()
-      if (error.status === 401) {
-        console.log("Invalid api key. See how to set your API key: https://help.openai.com/en/articles/5112595-best-practices-for-api-key-safety#h_a1ab3ba7b2")
-        // console.log(error)
-        process.exit(1);
-      }
-      if (error.status === 429) {
-      console.log("Rate limit reached or you've exceeded your current quota. Please check your plan and billing details.")
+    // Stop and clear the loading indicator
+    loadingIndicator.stop()
+  
+    // Write response to file in current working directory
+    const fileName = generateFileName();
+    fs.writeFileSync(path.join(process.cwd(), fileName), response.tutorial);
+
+    console.log(chalk.green(`New tutorial drafted: "${fileName}"`));
+    console.log(chalk.cyan(`Generation cost: $${response.cost}`));
+  } catch (error) {
+    loadingIndicator.stop()
+    if (error.status === 401) {
+      console.log("Invalid api key.")
+      // console.log(error)
       process.exit(1);
-      } else {
-        console.log("Error:", error)
-      }
     }
+    if (error.status === 429) {
+    console.log("Rate limit reached or you've exceeded your current quota. Please check your plan and billing details.")
+    process.exit(1);
+    } else {
+      console.log("Error:", error)
+    }
+  }
  
 }
 
