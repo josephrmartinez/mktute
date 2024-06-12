@@ -46,10 +46,6 @@ The following tutorial was generated with GPT-4 at a cost of $0.0235:
 
 When you run mktute, you will be presented with an option to choose which model you would like to use to generate the tutorial. A price estimation is included with these model selection choices.
 
-### Demo
-
-![mktute gif illustration](public/demo.gif)
-
 ### A Note on "Slop"
 
 Please give consideration before publishing tutorials generated with mktute. While mktute lowers the barrier to writing a coding tutorial, you should absolutely spend time thoroughly editing the generated content before publishing.
