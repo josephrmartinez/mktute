@@ -1,6 +1,6 @@
 {
   "name": "mktute",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "CLI tool to generate a markdown formatted tutorial based on recent diffs.",
   "main": "src/index.js",
   "type": "module",
@@ -19,6 +19,7 @@
     "commander": "^12.1.0",
     "dotenv": "^16.4.5",
     "inquirer": "^9.2.23",
+    "ollama": "^0.5.2",
     "openai": "^4.47.3",
     "simple-git": "^3.24.0"
   }
