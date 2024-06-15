@@ -1,4 +1,4 @@
-# mktute
+<img alt="mktute logo" src="https://github.com/josephrmartinez/josephrmartinez/blob/main/images/mktute.svg?raw=true" width="400">
 
 CLI App for Generating Markdown Tutorials Based on Recent Diffs
 
@@ -51,7 +51,7 @@ The first time your type this command, you will pull the llama3 7b model. The mo
 
 3. Close the terminal you used to run `ollama run llama3` **but keep the Ollama application running**.
 
-4. Run `mktute` and select "LOCAL - Ollama Llama 3" when prompted to select an AI provider. When you load the model for the first time, it may take a few seconds to start up. Please keep in mind that local interference performance is highly dependent on your machine's capabilities. You can run llama3 on a consumer grade laptop, but inference may be slow. In some cases, the
+4. Run `mktute` and select "LOCAL - Ollama Llama 3" when prompted to select an AI provider. When you load the model for the first time, it may take a few seconds to start up. Please keep in mind that local interference performance is highly dependent on your machine's capabilities. You can run llama3 on a consumer grade laptop, but inference may be slow.
 
 When using a local model, the output will print to stdout **and** be saved in a markdown file in the current working directory.
 
