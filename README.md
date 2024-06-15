@@ -8,14 +8,14 @@ CLI App for Generating Markdown Tutorials Based on Recent Diffs
 2. Select whether you would like to use a local AI model, Anthropic's Claude 3 Sonnet, or OpenAI's GPT-4-turbo to generate a step-by-step tutorial covering the code you recently committed.
 3. The tutorial is automatically saved as a markdown file in the current working directory.
 
-### Use cases:
+## Use cases:
 
 - Self-documentation
 - Drafting internal tutorials for other developers
 - Learning in public
 - Publish learning residue
 
-### But, why?
+## But, why?
 
 - **Knowledge Sharing:** You figured out something while coding that would be highly useful to share with other developers. mktute helps you quickly document your work in a user-friendly format. Publishing tutorials **_based on your actual work_** is one way that you can [learn generously](https://www.recurse.com/self-directives#learn-generously).
 
@@ -23,7 +23,7 @@ CLI App for Generating Markdown Tutorials Based on Recent Diffs
 
 - **Leverage LLM Strengths:** While LLMs may struggle with generating code from scratch, they are generally very good at summarizing and explaining existing code. By feeding in your actual code changes, mktute leverages a real strength of LLMs to produce high-quality, step-by-step tutorials.
 
-### Installation
+## Installation
 
 Install mktute globally:
 
@@ -31,17 +31,17 @@ Install mktute globally:
 sudo npm install -g mktute
 ```
 
-Or just install mktute in the current working directory:
+Or install mktute in the current working directory:
 
 ```
 npm install mktute
 ```
 
-### Run
+## Usage
 
-simply type `mktute` in the command line to run the interactive command line user interface.
+simply type `mktute` in the command line to run the interactive command line user interface. You will have control over which diffs to send and which model you use for inference.
 
-### Run with Local Model
+### Usage with Local Model
 
 1. Download the Ollama application: https://ollama.com/download
 
@@ -57,7 +57,7 @@ When using a local model, the output will print to stdout **and** be saved in a 
 
 You do not need to be connected to the internet, but you must be running the Ollama application in the background in order to use the local model option with mktute.
 
-### Example output and cost
+## Example output and cost
 
 The following tutorial was generated with GPT-4 at a cost of $0.0235:
 [How to Center a `<div>` Using TailwindCSS](https://github.com/josephrmartinez/mktute/blob/main/public/Tutorial_2024_06_04_17_50_21.md)
@@ -66,6 +66,6 @@ When you run mktute, you will be presented with an option to choose which model 
 
 You can also choose to run mktute with a local model to avoid any costs.
 
-### A Note on "Slop"
+## A Note on "Slop"
 
 Please give consideration before publishing tutorials generated with mktute. While mktute lowers the barrier to writing a coding tutorial, you should absolutely spend time thoroughly editing the generated content before publishing.

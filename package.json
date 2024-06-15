@@ -1,9 +1,14 @@
 {
   "name": "mktute",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "CLI tool to generate a markdown formatted tutorial based on recent diffs.",
   "main": "src/index.js",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/josephrmartinez/mktute"
+  },
+  "homepage": "https://github.com/josephrmartinez/mktute#readme",
   "bin": {
     "mktute": "bin/mktute.js"
   },

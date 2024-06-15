@@ -4,7 +4,7 @@ import { program } from 'commander';
 import { runMktute } from '../src/index.js';
 
 program
-  .version('1.0.8')
+  .version('1.0.9')
   .description('Generate tutorials from git diffs')
   .action(runMktute);
 
