@@ -28,7 +28,12 @@ export async function selectCommits() {
   return { startCommit, endCommit };
 }
 
-export async function getGitDiff(startCommit, endCommit) {
+/**
+  * Get the diff between two commits, where the commits could be the same.
+* @param startCommit - The commit hash of the start commit
+* @param endCommit - The commit hash of the end commit
+*/
+export async function getGitDiff(startCommit: string, endCommit: string) {
   const diff = await git.diff([startCommit, endCommit]);
   return diff;
 }

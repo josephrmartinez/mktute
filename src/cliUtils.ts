@@ -4,7 +4,7 @@ import chalk from 'chalk';
 export function createLoadingIndicator() {
   let indicator = ['◢', '◣', '◤', '◥'];
   let i = 0;
-  let intervalId;
+  let intervalId: NodeJS.Timeout;
 
   return {
     start: () => {
