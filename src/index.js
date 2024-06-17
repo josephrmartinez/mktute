@@ -1,78 +1,104 @@
 import 'dotenv/config';
-import { selectCommits, getGitDiff } from './gitUtils.js';
-import getAiResponse from './aiUtils.js';
-import { createLoadingIndicator, generateFileName } from './cliUtils.js';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
-
+import { selectCommits, getGitDiff } from './gitUtils.js';
+import { getOpenAIResponse, getAnthropicResponse, getOllamaResponse, estimateCost } from './aiUtils.js';
+import { createLoadingIndicator, generateFileName } from './cliUtils.js';
 
 export async function runMktute() {
-    // 1. Set ai api if not already accessible to shell
-    if (!process.env.OPENAI_API_KEY) {
+  // Select commits
+  const { startCommit, endCommit } = await selectCommits();  
+  const gitDiff = await getGitDiff(startCommit, endCommit);
+  
+  // Drop git diffs into local file for debugging
+  // fs.writeFileSync("./gitdiffs.md", gitDiff);  
+
+  // Enter tutorial topic
+  const { topic } = await inquirer.prompt({
+    type: 'input',
+    name: 'topic',
+    message: 'Enter tutorial topic:'
+  });
+  
+  const costEstimate = estimateCost(gitDiff)
+  
+  // Select AI model: Local llama 3, Claude Sonnet, GPT-4 
+  const { provider } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'provider',
+      message: 'Select AI provider:',
+      choices: [{ name: `LOCAL - Ollama Llama3 - $0.000`, value: "OLLAMA"}, { name: `Anthropic - Claude Sonnet - $${costEstimate.anthropic}`, value: "ANTHROPIC"}, {name: `OpenAI - GPT-4.0 - $${costEstimate.openAI}`, value: "OPENAI"}]
+    }]);
+  
+  // Set AI API key for selected provider if not already accessible to shell
+  if (provider !== "OLLAMA") {
+    const envVarName = `${provider}_API_KEY`;
+
+    if (!process.env[envVarName]) {
         const { apiKey } = await inquirer.prompt({
           type: 'password',
           name: 'apiKey',
-          message: 'Set OPENAI_API_KEY env variable: ',
+          message: `Set ${envVarName} env variable: `,
         });
-        process.env.OPENAI_API_KEY = apiKey;
+        process.env[envVarName] = apiKey;
       }
-    
-    // 2. User selects commits
-    // TODO: update to only allow end commit to be from AFTER selected start commit
-    // TODO: return entire contents of updated file(s)
-    const { startCommit, endCommit } = await selectCommits();  
-    const gitDiff = await getGitDiff(startCommit, endCommit);
-    
-    // 3. Enter tutorial topic
-    const { topic } = await inquirer.prompt({
-      type: 'input',
-      name: 'topic',
-      message: 'Enter tutorial topic:'
-    });
-      
-    // 4. TODO: allow user to specify ai model? Local option?
+  }
+  
+  // Start and display the loading indicator if doing external API call
+  const loadingIndicator = createLoadingIndicator();
 
-    // 5. TODO: add confirmation stage with estimated cost
-    
-    // 6. Start and display the loading indicator
-    const loadingIndicator = createLoadingIndicator();
-    loadingIndicator.start();
-   
-    try {
-      // 8. Fetch ai response  
-      const aiResponse = await getAiResponse(gitDiff, topic);
-        
-      // 9. Stop and clear the loading indicator
-      loadingIndicator.stop()
-    
-      // 10. Display file name and generation cost
-      const tutorial = aiResponse.choices[0].message.content
-      const inputTokens = aiResponse.usage.prompt_tokens
-      const outputTokens = aiResponse.usage.completion_tokens
-      // const cost = (inputTokens / 1000 * 0.005) + (outputTokens / 1000 * 0.015) // gpt-4o
-      const cost = (inputTokens / 1000 * 0.01) + (outputTokens / 1000 * 0.03) // gpt-4-turbo
+  let response;
 
-      const fileName = generateFileName();
-      fs.writeFileSync(path.join(process.cwd(), fileName), tutorial);
-
-      console.log(chalk.green(`New tutorial drafted: "${fileName}"`));
-      console.log(chalk.cyan(`Generation cost: $${cost.toFixed(4)}`));
-    } catch (error) {
-      loadingIndicator.stop()
-      if (error.status === 401) {
-        console.log("Invalid api key. See how to set your API key: https://help.openai.com/en/articles/5112595-best-practices-for-api-key-safety#h_a1ab3ba7b2")
-        // console.log(error)
-        process.exit(1);
-      }
-      if (error.status === 429) {
-      console.log("Rate limit reached or you've exceeded your current quota. Please check your plan and billing details.")
-      process.exit(1);
-      } else {
-        console.log("Error:", error)
-      }
+  try {
+    if (provider === "OPENAI" || provider === "ANTHROPIC") {
+      loadingIndicator.start();
     }
+
+    switch (provider) {
+      case "OPENAI":
+        response = await getOpenAIResponse(gitDiff, topic);
+        break;
+      case "ANTHROPIC":
+        response = await getAnthropicResponse(gitDiff, topic);
+        break;
+      case "OLLAMA":
+        response = await getOllamaResponse(gitDiff, topic);
+        break;
+      default:
+        throw new Error("Unsupported provider.")
+    }
+
+    if (provider === "OPENAI" || provider === "ANTHROPIC") {
+      // Stop and clear the loading indicator
+      loadingIndicator.stop()
+    }
+  
+    // Write response to file in current working directory
+    const fileName = generateFileName();
+    fs.writeFileSync(path.join(process.cwd(), fileName), response.tutorial);
+
+    console.log(chalk.green(`\nTutorial saved in cwd: "${fileName}"`));
+    console.log(chalk.cyan(`Generation cost: $${response.cost}`));
+  } catch (error) {
+    loadingIndicator.stop()
+    if (error.status === 401) {
+      console.log("Invalid api key.")
+      // console.log(error)
+      process.exit(1);
+    } else if (error.status === 429) {
+    console.log("Rate limit reached or you've exceeded your current quota. Please check your plan and billing details.")
+    process.exit(1);
+    }
+    else if (error instanceof TypeError && error.message.includes('fetch failed')) {
+      console.log("Fetch operation failed. Make sure the Ollama app is installed and running.");
+    }
+    else {
+      console.log("An unexpected error occurred:", error.message);
+    }
+  }
  
 }
 
