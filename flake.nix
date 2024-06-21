@@ -29,13 +29,8 @@
           default = pkgs.writeShellScriptBin "mktute" "${nodejs}/bin/node ${node}/bin/mktute.js;";
           node = pkgs.buildNpmPackage {
             name = packageJSON.name;
-            src = pkgs.fetchFromGitHub {
-              owner = "josephrmartinez";
-              repo = "mktute";
-              rev = "670ea75f9927eeea5a2b15c048b694e95c94d709";
-              sha256 = "sha256-aDSCBvBmaYykNLm1T7Ui4v8EZCaYnXETbqXKKgR64Wc=";
-            };
-            npmDepsHash = "sha256-JYBqbX/OOVclESNhomUZXaceq8jz3StoPyIyTmhc2fI=";
+            src = ./.;
+            npmDepsHash = "sha256-FpDFFOoTgEc3UZ8NO9Kr5PsY73LO4xM7srfo/lCJCa8=";
             npmBuildScript = "build:nix";
             dontNpmInstall = true;
             postInstall = ''mv $out/bin/mktute.cjs $out/bin/mktute.js'';
