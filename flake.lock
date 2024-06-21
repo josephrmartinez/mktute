@@ -34,10 +34,24 @@
         "type": "github"
       }
     },
+    "packageJSONText": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1,
+        "narHash": "sha256-rDbTdRubwRIakb8JvpkvgblS7/0zr9V3elB6mgVsR+0=",
+        "path": "package.json",
+        "type": "path"
+      },
+      "original": {
+        "path": "package.json",
+        "type": "path"
+      }
+    },
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "packageJSONText": "packageJSONText"
       }
     },
     "systems": {
