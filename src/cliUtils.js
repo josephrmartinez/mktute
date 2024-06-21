@@ -15,14 +15,13 @@ export function createLoadingIndicator() {
     },
     stop: () => {
       clearInterval(intervalId);
-      process.stdout.write('\r'); // Clear the line
+      process.stdout.write('\r');
     }
   };
 }
 
 export function generateFileName() {
         const now = new Date();
-        
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
@@ -31,7 +30,6 @@ export function generateFileName() {
         const seconds = String(now.getSeconds()).padStart(2, '0');
         
         const formattedDate = `${year}_${month}_${day}_${hours}_${minutes}_${seconds}`;
-        
         const fileName = `Tutorial_${formattedDate}.md`;
         
         return fileName;

@@ -2,14 +2,34 @@ import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import ollama from 'ollama';
 
-const systemMessage = 'You are an expert at reading and understanding git diffs. Given a set of diffs, you will generate a programming tutorial that explains a concept and walks someone through how to address the problem(s) just like the diffs demonstrate. Format your response in valid markdown. The tutorial should include code examples devired solely from the provided diffs.';
+const systemMessage = `You are an expert at reading and understanding git diffs. Given a set of diffs and the full text of the updated files, you will create a programming tutorial that explains a concept and guides the reader through addressing the problem(s) highlighted by the diffs. 
 
-function getUserMessage(topic, gitDiff) {
-  return `Generate a programming tutorial on the following topic: ${topic}.\n\n /// This tutorial should be based entirely on the following git diffs:\n\n${gitDiff}\n\n /// Be sure to compare the original code with the updated code and to discuss the underlying concepts. Start the tutorial by helping the user understand the initial state of the code. Identify the problem that the changes address. Explain WHY the code update was made. If the updated code contains corrections, explain what was wrong with the original code and why these corrections are effective. If the updated code indicates that the user created or deleted a file, explain why this was necessary. When it is appropriate, break the diffs into multiple steps to accomplish the tutorial topic. Do not mention the term "diff" in your response and DO NOT include the actual diffs. You are just taking in these diffs as reference material to understand what changes were made. Your job is to use this material to explain to the user the topic of the tutorial in a logical, step-by-step manner that is consistent with how the diffs show the actual code was changed.`;
+### Tutorial Structure
+
+1. **Introduction**
+    - Describe the initial state of the code or project.
+    - Identify and explain the problem that the changes address and why the code update was necessary. Be thorough.
+2. **Step-by-Step Explanation**
+    - Break the changes into logical steps.
+    - Compare original and updated code, highlighting key differences and underlying concepts.
+    - Provide code examples derived from the diffs but do not use + and - markers.
+     - Point out if the user needs to create or delete a file at a certain step. If so, explain the reasoning behind this and provide the full file path.
+    - Use content from the full text of the updated files to provide additional context when necessary.
+    - Ensure the reader has enough information to understand the changes fully.
+3. **Conclusion**
+
+### Formatting
+- Format your response in valid Markdown.
+- Do not mention the term "diff" in your response.
+
+Your job is to use the diffs as reference material to explain the tutorial topic in a logical, step-by-step manner.`;
+
+function getUserMessage(topic, diffsAndContent) {
+  return `Generate a programming tutorial on the following topic: ${topic}.\n\n This tutorial should be based entirely on the following git diffs and updated files:\n\n${diffsAndContent}\n\n`;
 }
 
 
-export async function getOpenAIResponse(gitDiff, topic) {
+export async function getOpenAIResponse(diffsAndContent, topic) {
   const openai = new OpenAI({apiKey: process.env.OPENAI_API_KEY })
 
   try {
@@ -22,7 +42,7 @@ export async function getOpenAIResponse(gitDiff, topic) {
         },
         {
           role: 'user',
-          content: getUserMessage(topic, gitDiff),
+          content: getUserMessage(topic, diffsAndContent),
         },
       ],
     });
@@ -40,18 +60,18 @@ export async function getOpenAIResponse(gitDiff, topic) {
   }
 }
 
-export async function getAnthropicResponse(gitDiff, topic) {
+export async function getAnthropicResponse(diffsAndContent, topic) {
   const anthropic = new Anthropic({apiKey: process.env.ANTHROPIC_API_KEY })
 
   try {
     const msg = await anthropic.messages.create({
-      model: 'claude-3-sonnet-20240229',
-      max_tokens: 3000,
+      model: 'claude-3-5-sonnet-20240620',
+      max_tokens: 4000,
       system: systemMessage,
       messages: [
         {
           role: 'user',
-          content: getUserMessage(topic, gitDiff),
+          content: getUserMessage(topic, diffsAndContent),
         },
       ],
     });
@@ -59,7 +79,7 @@ export async function getAnthropicResponse(gitDiff, topic) {
     const inputTokens = msg.usage.input_tokens
     const outputTokens = msg.usage.output_tokens
     // const cost = ((inputTokens / 1000 * 0.015) + (outputTokens / 1000 * 0.075)).toFixed(3) //claude-3-opus-20240229
-    const cost = ((inputTokens / 1000 * 0.003) + (outputTokens / 1000 * 0.015)).toFixed(3) //claude-3-sonnet-20240229
+    const cost = ((inputTokens / 1000 * 0.003) + (outputTokens / 1000 * 0.015)).toFixed(3) //claude-3-5-sonnet-20240620
     // const cost = ((inputTokens / 1000 * 0.00025) + (outputTokens / 1000 * 0.00125)).toFixed(3) //claude-3-haiku-20240307
 
     const tutorial = msg.content[0].text;
@@ -72,7 +92,7 @@ export async function getAnthropicResponse(gitDiff, topic) {
 }
 
 
-export async function getOllamaResponse(gitDiff, topic) {
+export async function getOllamaResponse(diffsAndContent, topic) {
   try {
     const response = await ollama.chat({
       model: 'llama3',      
@@ -84,7 +104,7 @@ export async function getOllamaResponse(gitDiff, topic) {
         },
         {
           role: 'user',
-          content: getUserMessage(topic, gitDiff),
+          content: getUserMessage(topic, diffsAndContent),
         },
       ],
     });
@@ -105,9 +125,9 @@ export async function getOllamaResponse(gitDiff, topic) {
 }
 
 
-export function estimateCost(gitDiff) {
-  const combinedInput = gitDiff; // update later to include other context inputs
-  const inputLength = combinedInput.length;
+export function estimateCost(diffsAndContent) {
+  
+  const inputLength = diffsAndContent.length;
   // Assume 1 token ~= 4 chars in English
   const inputTokens = inputLength / 4;
   

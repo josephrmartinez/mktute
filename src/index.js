@@ -3,17 +3,17 @@ import inquirer from 'inquirer';
 import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
-import { selectCommits, getGitDiff } from './gitUtils.js';
+import { selectCommits, getDiffsAndContent } from './gitUtils.js';
 import { getOpenAIResponse, getAnthropicResponse, getOllamaResponse, estimateCost } from './aiUtils.js';
 import { createLoadingIndicator, generateFileName } from './cliUtils.js';
 
 export async function runMktute() {
   // Select commits
   const { startCommit, endCommit } = await selectCommits();  
-  const gitDiff = await getGitDiff(startCommit, endCommit);
+  const diffsAndContent = await getDiffsAndContent(startCommit, endCommit);
   
   // Drop git diffs into local file for debugging
-  // fs.writeFileSync("./gitdiffs.md", gitDiff);  
+  // fs.writeFileSync("./diffsAndContent.md", diffsAndContent);  
 
   // Enter tutorial topic
   const { topic } = await inquirer.prompt({
@@ -22,7 +22,7 @@ export async function runMktute() {
     message: 'Enter tutorial topic:'
   });
   
-  const costEstimate = estimateCost(gitDiff)
+  const costEstimate = estimateCost(diffsAndContent)
   
   // Select AI model: Local llama 3, Claude Sonnet, GPT-4 
   const { provider } = await inquirer.prompt([
@@ -30,7 +30,7 @@ export async function runMktute() {
       type: 'list',
       name: 'provider',
       message: 'Select AI provider:',
-      choices: [{ name: `LOCAL - Ollama Llama3 - $0.000`, value: "OLLAMA"}, { name: `Anthropic - Claude Sonnet - $${costEstimate.anthropic}`, value: "ANTHROPIC"}, {name: `OpenAI - GPT-4.0 - $${costEstimate.openAI}`, value: "OPENAI"}]
+      choices: [{ name: `LOCAL - Ollama Llama3 - $0.000`, value: "OLLAMA"}, { name: `Anthropic - Claude 3.5 Sonnet - $${costEstimate.anthropic}`, value: "ANTHROPIC"}, {name: `OpenAI - GPT-4.0 - $${costEstimate.openAI}`, value: "OPENAI"}]
     }]);
   
   // Set AI API key for selected provider if not already accessible to shell
@@ -59,13 +59,13 @@ export async function runMktute() {
 
     switch (provider) {
       case "OPENAI":
-        response = await getOpenAIResponse(gitDiff, topic);
+        response = await getOpenAIResponse(diffsAndContent, topic);
         break;
       case "ANTHROPIC":
-        response = await getAnthropicResponse(gitDiff, topic);
+        response = await getAnthropicResponse(diffsAndContent, topic);
         break;
       case "OLLAMA":
-        response = await getOllamaResponse(gitDiff, topic);
+        response = await getOllamaResponse(diffsAndContent, topic);
         break;
       default:
         throw new Error("Unsupported provider.")
