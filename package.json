@@ -1,19 +1,19 @@
 {
   "name": "mktute",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "CLI tool to generate a markdown formatted tutorial based on recent diffs.",
-  "main": "src/index.ts",
-  "type": "module",
+  "main": "dist/mktute.cjs",
+  "type": "commonjs",
   "repository": {
     "type": "git",
     "url": "https://github.com/josephrmartinez/mktute"
   },
   "homepage": "https://github.com/josephrmartinez/mktute#readme",
   "bin": {
-    "mktute": "bin/mktute.ts"
+    "mktute": "./dist/mktute.cjs"
   },
   "scripts": {
-    "build": "npx esbuild bin/mktute.ts --bundle --platform=node --target=node10.4 --outfile=dist/mktute.cjs --minify",
+    "build": "npx esbuild bin/mktute.ts --bundle --platform=node --target=node10.4 --outfile=dist/mktute.cjs",
     "start": "node dist/mktute.cjs",
     "run": "npm run build && npm run start"
   },
@@ -22,7 +22,6 @@
   "license": "MIT",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.22.0",
-    "@types/commander": "^2.12.2",
     "@types/inquirer": "^9.0.7",
     "chalk": "^5.3.0",
     "commander": "^12.1.0",
