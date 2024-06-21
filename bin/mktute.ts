@@ -1,7 +1,5 @@
-#!/usr/bin/env node
-
 import { program } from 'commander';
-import { runMktute } from '../src/index.js';
+import { runMktute } from '../src/index';
 
 program
   .version('1.0.9')

@@ -30,7 +30,7 @@ export async function selectCommits() {
   return { startCommit, endCommit };
 }
 
-export async function getUpdatedFileContent(startCommit, endCommit) {
+export async function getUpdatedFileContent(startCommit: string, endCommit: string) {
 
   const files = await git.diff(['--name-only', startCommit, endCommit])
   // console.log("files:", files) // These are the routes of files updated. 
@@ -49,7 +49,7 @@ export async function getUpdatedFileContent(startCommit, endCommit) {
 
 }
 
-export async function getDiffsAndContent(startCommit, endCommit) {  
+export async function getDiffsAndContent(startCommit: string, endCommit: string) {  
   let diff = `* GIT DIFFs SHOWING CHANGES MADE: *\n`
   diff += await git.diff([startCommit, endCommit]);
   diff += '*** END OF GIT DIFFS ***'

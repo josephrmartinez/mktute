@@ -2,6 +2,10 @@ import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import ollama from 'ollama';
 
+function assertIsTextBlock(value: unknown): asserts value is Anthropic.TextBlock {
+  if (typeof value === "object" && value && value.hasOwnProperty("text")) throw new Error('Expected text block');
+}
+
 const systemMessage = `You are an expert at reading and understanding git diffs. Given a set of diffs and the full text of the updated files, you will create a programming tutorial that explains a concept and guides the reader through addressing the problem(s) highlighted by the diffs. 
 
 ### Tutorial Structure
@@ -24,15 +28,14 @@ const systemMessage = `You are an expert at reading and understanding git diffs.
 
 Your job is to use the diffs as reference material to explain the tutorial topic in a logical, step-by-step manner.`;
 
-function getUserMessage(topic, diffsAndContent) {
+function getUserMessage(topic:string, diffsAndContent:string) {
   return `Generate a programming tutorial on the following topic: ${topic}.\n\n This tutorial should be based entirely on the following git diffs and updated files:\n\n${diffsAndContent}\n\n`;
 }
 
 
-export async function getOpenAIResponse(diffsAndContent, topic) {
+export async function getOpenAIResponse(diffsAndContent:string, topic:string) {
   const openai = new OpenAI({apiKey: process.env.OPENAI_API_KEY })
 
-  try {
     const response = await openai.chat.completions.create({
       model: 'gpt-4-turbo',
       messages: [
@@ -46,6 +49,10 @@ export async function getOpenAIResponse(diffsAndContent, topic) {
         },
       ],
     });
+  
+    if (!response.usage) {
+      throw new Error('Usage not found in response');
+    }
 
     const inputTokens = response.usage.prompt_tokens
     const outputTokens = response.usage.completion_tokens
@@ -55,15 +62,12 @@ export async function getOpenAIResponse(diffsAndContent, topic) {
 
     return { cost, tutorial };
 
-  } catch (error) {
-    throw error
   }
-}
 
-export async function getAnthropicResponse(diffsAndContent, topic) {
+export async function getAnthropicResponse(diffsAndContent:string, topic:string) {
   const anthropic = new Anthropic({apiKey: process.env.ANTHROPIC_API_KEY })
 
-  try {
+  
     const msg = await anthropic.messages.create({
       model: 'claude-3-5-sonnet-20240620',
       max_tokens: 4000,
@@ -82,20 +86,19 @@ export async function getAnthropicResponse(diffsAndContent, topic) {
     const cost = ((inputTokens / 1000 * 0.003) + (outputTokens / 1000 * 0.015)).toFixed(3) //claude-3-5-sonnet-20240620
     // const cost = ((inputTokens / 1000 * 0.00025) + (outputTokens / 1000 * 0.00125)).toFixed(3) //claude-3-haiku-20240307
 
-    const tutorial = msg.content[0].text;
+  // EXAMINE
+    assertIsTextBlock(msg.content[0]);
+  const tutorial = msg.content[0].text;
 
-    return { cost, tutorial };
-
-  } catch (error) {
-    throw error
-  }
+  return {cost, tutorial};
 }
 
 
-export async function getOllamaResponse(diffsAndContent, topic) {
+
+export async function getOllamaResponse(diffsAndContent: string, topic: string) {
   try {
     const response = await ollama.chat({
-      model: 'llama3',      
+      model: 'llama3',
       stream: true,
       messages: [
         {
@@ -118,24 +121,24 @@ export async function getOllamaResponse(diffsAndContent, topic) {
 
     const cost = 0.000
 
-    return { cost, tutorial: tutorialContent };
+    return {cost, tutorial: tutorialContent};
   } catch (error) {
     throw error
   }
 }
 
 
-export function estimateCost(diffsAndContent) {
+export function estimateCost(diffsAndContent:string) {
   
   const inputLength = diffsAndContent.length;
   // Assume 1 token ~= 4 chars in English
   const inputTokens = inputLength / 4;
-  
+
   // Assume fixed output size of 2000 tokens
   const outputTokens = 2000;
 
   const openAI = ((inputTokens / 1000 * 0.01) + (outputTokens / 1000 * 0.03)).toFixed(3) // gpt-4-turbo pricing
-  
+
   //const anthropic = ((inputTokens / 1000 * 0.015) + (outputTokens / 1000 * 0.075)).toFixed(3) //claude-3-opus-20240229
   const anthropic = ((inputTokens / 1000 * 0.003) + (outputTokens / 1000 * 0.015)).toFixed(3) //claude-3-sonnet-20240229
   // const anthropic =((inputTokens / 1000 * 0.00025) + (outputTokens / 1000 * 0.00125)).toFixed(3) //claude-3-haiku-20240307
