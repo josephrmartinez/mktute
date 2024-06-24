@@ -5,7 +5,7 @@ CLI App for Generating Markdown Tutorials Based on Recent Diffs
 ### Turn your recent git commits into a step-by-step programming tutorial:
 
 1. Run `mktute`, select start and end commits.
-2. Select whether you would like to use a local AI model, Anthropic's Claude 3 Sonnet, or OpenAI's GPT-4-turbo to generate a step-by-step tutorial covering the code you recently committed.
+2. Select whether you would like to use a local AI model, Anthropic's Claude 3.5 Sonnet, or OpenAI's GPT-4-turbo to generate a step-by-step tutorial covering the code you recently committed.
 3. The tutorial is automatically saved as a markdown file in the current working directory.
 
 ## Use cases:
@@ -59,7 +59,7 @@ You do not need to be connected to the internet, but you must be running the Oll
 
 ## Example output and cost
 
-The following tutorial was generated with GPT-4 at a cost of $0.0235:
+The following tutorial was generated with GPT-4-turbo at a cost of $0.0235:
 [How to Center a `<div>` Using TailwindCSS](https://github.com/josephrmartinez/mktute/blob/main/public/Tutorial_2024_06_04_17_50_21.md)
 
 When you run mktute, you will be presented with an option to choose which model you would like to use to generate the tutorial. A price estimation is included with these model selection choices.
