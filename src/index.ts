@@ -8,13 +8,15 @@ import { getOpenAIResponse, getAnthropicResponse, getOllamaResponse, estimateCos
 import { createLoadingIndicator, generateFileName } from './cliUtils';
 
 export async function runMktute() {
+  // Check if git logs
+  if (!(fs.readdirSync(process.cwd()).includes('.git'))) {
+    throw new Error("To use mktute, initialize a git repo in the current working directory.")
+  }
+  
   // Select commits
   const { startCommit, endCommit } = await selectCommits();  
   const diffsAndContent = await getDiffsAndContent(startCommit, endCommit);
   
-  // Drop git diffs into local file for debugging
-  // fs.writeFileSync("./diffsAndContent.md", diffsAndContent);  
-
   // Enter tutorial topic
   const {topic} = await inquirer.prompt({
     type: 'input',
