@@ -13,7 +13,7 @@
     "mktute": "./dist/mktute.cjs"
   },
   "scripts": {
-    "build": "npx esbuild bin/mktute.ts --bundle --platform=node --target=node10.4 --outfile=$out/bin/mktute.cjs --minify",
+    "build": "npx esbuild bin/mktute.ts --bundle --platform=node --target=node10.4 --outfile=dist/mktute.cjs --minify",
     "build:nix": "npx esbuild bin/mktute.ts --bundle --platform=node --target=node10.4 --outfile=$out/bin/mktute.cjs",
     "start": "node dist/mktute.cjs",
     "run": "npm run build && npm run start"
