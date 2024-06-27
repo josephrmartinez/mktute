@@ -30,7 +30,7 @@
           node = pkgs.buildNpmPackage {
             name = packageJSON.name;
             src = ./.;
-            npmDepsHash = "sha256-FpDFFOoTgEc3UZ8NO9Kr5PsY73LO4xM7srfo/lCJCa8=";
+            npmDepsHash = "sha256-Qg2As/JDJSJjizStajXiGEkIvWwvmCt6mmpp4OR5uAY=";
             npmBuildScript = "build:nix";
             dontNpmInstall = true;
             postInstall = ''mv $out/bin/mktute.cjs $out/bin/mktute.js'';
