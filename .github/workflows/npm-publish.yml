@@ -1,0 +1,6 @@
+name: Publish to NPM
+
+on: 
+  push:
+    branches:
+        - main

@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 
-import { program } from 'commander';
+import { ArgumentParser } from "argparse"
+import { description, version } from "../package.json"
 import { runMktute } from '../src/index';
+ 
+const parser = new ArgumentParser({
+  description: description
+});
+parser.add_argument('-v', '--version', { action: 'version', version });
+parser.parse_args()
 
-program
-  .version('1.0.9')
-  .description('Generate tutorials from git diffs')
-  .action(runMktute);
+runMktute()
 
-program.parse(process.argv);
